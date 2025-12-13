@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Частотный криптоанализ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+      resize: vertical;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 18px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: block;
+      margin: 20px auto;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Частотный криптоанализ (русский язык)</h1>
+
+    <label for="cipherInput"><strong>Введите зашифрованный текст:</strong></label>
+    <textarea id="cipherInput" placeholder="Например: ё угкхррсл йоуы, фхо шоепчыг усурц..."></textarea>
+
+    <button onclick="analyze()">Расшифровать</button>
+
+    <label for="plainOutput"><strong>Результат анализа:</strong></label>
+    <textarea id="plainOutput" readonly placeholder="Результат появится здесь..."></textarea>
+  </div>
+
+  <!-- Скрипт: частотный анализ на JavaScript -->
+  <script>
+    // Эталонная частота букв в русском языке (по убыванию)
+    const RUSSIAN_FREQ = "оеаинтсрвлкмдпугяыьзбчйхжшюцщэфъё";
+
+    // Функция расшифровки
+    function analyze() {
+      // 1. Получаем текст из поля ввода
+      const cipherText = document.getElementById("cipherInput").value.toLowerCase();
+      const outputField = document.getElementById("plainOutput");
+
+      // 2. Определяем, какие символы — русские буквы
+      const RUSSIAN_LETTERS = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя";
+
+      // 3. Считаем частоту каждой буквы в шифротексте
+      const freq = {};
+      let letterCount = 0;
+
+      for (let char of cipherText) {
+        if (RUSSIAN_LETTERS.includes(char)) {
+          freq[char] = (freq[char] || 0) + 1;
+          letterCount++;
+        }
+      }
+
+      // 4. Проверка: есть ли вообще русские буквы?
+      if (letterCount === 0) {
+        outputField.value = "❌ В тексте не найдено русских букв.";
+        return;
+      }
+
+      // 5. Сортируем буквы шифротекста по частоте (от самых частых)
+      const sortedCipherLetters = Object.entries(freq)
+        .sort((a, b) => b[1] - a[1]) // по убыванию
+        .map(([letter]) => letter);   // оставляем только буквы
+
+      // 6. Создаём таблицу замены: шифрбуква → предполагаемая буква
+      const mapping = {};
+      for (let i = 0; i < sortedCipherLetters.length; i++) {
+        // Берём i-ю самую частую букву из эталона
+        mapping[sortedCipherLetters[i]] = RUSSIAN_FREQ[i] || '?';
+      }
+
+      // 7. Применяем замену к исходному тексту
+      let result = "";
+      for (let char of cipherText) {
+        if (RUSSIAN_LETTERS.includes(char)) {
+          result += mapping[char];
+        } else {
+          // Сохраняем всё остальное: пробелы, знаки, цифры
+          result += char;
+        }
+      }
+
+      // 8. Выводим результат
+      outputField.value = result;
+    }
+  </script>
+</body>
+</html>
